@@ -1,0 +1,4 @@
+.button {
+  composes: title from "./hoge.css";
+  background-color: lime;
+}
