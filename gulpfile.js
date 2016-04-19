@@ -8,7 +8,8 @@ const cssnano = require('cssnano');
 const imp = require('postcss-import');
 const named = require('vinyl-named');
 
-gulp.task('webpack', () =>
+// 1. Build js + css bundle for browser. Enough for server side rendering.
+gulp.task('webpack-full', () =>
   gulp.src('src/entry.js')
     .pipe(webpack({
       module: {
@@ -24,8 +25,29 @@ gulp.task('webpack', () =>
     .pipe(gulp.dest('dist'))
 );
 
+// 2. Build js bundle for browser. No bundle css, need to run (4) for it.
+gulp.task('webpack-no-css', () =>
+  gulp.src('src/entry.js')
+    .pipe(webpack({
+      module: {
+        loaders: [
+          { test: /\.css$/, loader: 'css/locals?modules' }
+        ]
+      },
+      output: {
+        filename: '[name].js',
+        libraryTarget: 'commonjs2'
+      }
+    }))
+    .on('error', e => { console.log(e) })
+    .pipe(gulp.dest('dist'))
+);
+
+// 3. Build individual js modules exporting class names for server and e2e test.
+// Use as complementary of (1).
+// NOTE: Not enough for isomorphic rendering, packing togeter with renderer is required.
 gulp.task('prerender', () =>
-  gulp.src(['src/hoge.css', 'src/fuga.css'])
+  gulp.src(['src/*.css', '!src/entry.css'])
     .pipe(named())
     .pipe(webpack({
       module: {
@@ -35,7 +57,10 @@ gulp.task('prerender', () =>
       },
       output: {
         libraryTarget: 'commonjs2'
-      }
+      },
+      plugins: [
+        new webpack.webpack.optimize.UglifyJsPlugin()
+      ]
     }))
     .on('error', e => { console.log(e) })
     .pipe(gulp.dest('dist'))
@@ -48,6 +73,8 @@ gulp.task('postcss', () =>
     .pipe(gulp.dest('temp'))
 );
 
+// 4. Build bundle css + individual jsons without webpack for cleaner outputs.
+// Gives everything needed for server-side rendering.
 gulp.task('postcss-2nd', ['postcss'], () =>
   gulp.src('src/entry.css')
     .pipe(postcss([imp, autoprefixer, cssnano]))
@@ -55,4 +82,5 @@ gulp.task('postcss-2nd', ['postcss'], () =>
     .pipe(gulp.dest('dist'))
 );
 
-gulp.task('default', ['postcss-2nd', 'prerender']);
+// WINNER: (2) + (4)
+gulp.task('default', ['postcss-2nd', 'webpack-no-css']);
