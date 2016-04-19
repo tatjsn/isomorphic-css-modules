@@ -8,7 +8,7 @@ const cssnano = require('cssnano');
 const imp = require('postcss-import');
 const named = require('vinyl-named');
 
-// 1. Build js + css bundle for browser. Enough for server side rendering.
+// Method 1. Build js + css bundle for browser. Enough for client-only rendering.
 gulp.task('webpack-full', () =>
   gulp.src('src/entry.js')
     .pipe(webpack({
@@ -25,7 +25,7 @@ gulp.task('webpack-full', () =>
     .pipe(gulp.dest('dist'))
 );
 
-// 2. Build js bundle for browser. No bundle css, need to run (4) for it.
+// Method 2. Build js bundle for browser. No bundle css, need to run (4) for it.
 gulp.task('webpack-no-css', () =>
   gulp.src('src/entry.js')
     .pipe(webpack({
@@ -43,9 +43,9 @@ gulp.task('webpack-no-css', () =>
     .pipe(gulp.dest('dist'))
 );
 
-// 3. Build individual js modules exporting class names for server and e2e test.
-// Use as complementary of (1).
-// NOTE: Not enough for isomorphic rendering, packing togeter with renderer is required.
+// Method 3. Build individual js modules exporting class names for e2e test, as complementary of (1)
+// NOTE: Not enough for isomorphic rendering (different name), extra work of wrapping
+// together with components then exporting as single renderer module is required.  
 gulp.task('prerender', () =>
   gulp.src(['src/*.css', '!src/entry.css'])
     .pipe(named())
@@ -73,7 +73,7 @@ gulp.task('postcss', () =>
     .pipe(gulp.dest('temp'))
 );
 
-// 4. Build bundle css + individual jsons without webpack for cleaner outputs.
+// Method 4. Build bundle css + individual jsons without webpack for cleaner outputs.
 // Gives everything needed for server-side rendering.
 gulp.task('postcss-2nd', ['postcss'], () =>
   gulp.src('src/entry.css')
