@@ -17,8 +17,12 @@ gulp.task('webpack-full', () =>
           { test: /\.css$/, loader: ExtractTextPlugin.extract('style', 'css?modules') }
         ]
       },
+      output: {
+        filename: '[name].js'
+      },
       plugins: [
-        new ExtractTextPlugin('dist/extracted.css')
+        new ExtractTextPlugin('dist/extracted.css'),
+        new webpack.webpack.optimize.UglifyJsPlugin()
       ]
     }))
     .on('error', e => { console.log(e) })
@@ -35,9 +39,11 @@ gulp.task('webpack-no-css', () =>
         ]
       },
       output: {
-        filename: '[name].js',
-        libraryTarget: 'commonjs2'
-      }
+        filename: '[name].js'
+      },
+      plugins: [
+        new webpack.webpack.optimize.UglifyJsPlugin()
+      ]
     }))
     .on('error', e => { console.log(e) })
     .pipe(gulp.dest('dist'))
