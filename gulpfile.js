@@ -44,8 +44,8 @@ gulp.task('webpack-no-css', () =>
 );
 
 // Method 3. Build individual js modules exporting class names for e2e test, as complementary of (1)
-// NOTE: Not enough for isomorphic rendering (different name), extra work of wrapping
-// together with components then exporting as single renderer module is required.  
+// NOTE: Not enough for isomorphic rendering because of different name, extra work of wrapping
+// with depender components and exporting as a single server-side renderer module is required.  
 gulp.task('prerender', () =>
   gulp.src(['src/*.css', '!src/entry.css'])
     .pipe(named())
